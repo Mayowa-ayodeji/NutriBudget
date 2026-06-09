@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriBudget – Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #2E7D32;
+    --green-mid: #43A047;
+    --green-light: #66BB6A;
+    --amber: #F59E0B;
+    --amber-light: #FBBF24;
+    --bg-light: #F4F9F4;
+    --bg-dark: #0E1A0E;
+    --card-light: #FFFFFF;
+    --card-dark: #1A2B1A;
+    --text-light: #1A1A1A;
+    --text-dark: #F0F7F0;
+    --muted-light: #6B7B6B;
+    --muted-dark: #8FA98F;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-light);
+    color: var(--text-light);
+    min-height: 100vh;
+    overflow: hidden;
+    transition: background 0.4s, color 0.4s;
+  }
+
+  body.dark {
+    background: var(--bg-dark);
+    color: var(--text-dark);
+  }
+
+  /* THEME TOGGLE */
+  .theme-toggle {
+    position: fixed;
+    top: 1.2rem;
+    right: 1.2rem;
+    z-index: 1000;
+    background: none;
+    border: 2px solid var(--green-mid);
+    border-radius: 50px;
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s;
+    color: var(--green-mid);
+  }
+  .theme-toggle:hover { background: var(--green-mid); color: white; }
+
+  /* SCREENS WRAPPER */
+  .screens {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    transform: translateX(40px);
+    padding: 2rem;
+  }
+
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+  }
+
+  .screen.exit {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  /* ===== LOADING SCREEN ===== */
+  #screen-loading {
+    background: linear-gradient(145deg, #1B5E20, #2E7D32, #388E3C);
+  }
+
+  body.dark #screen-loading {
+    background: linear-gradient(145deg, #0A1A0A, #1B5E20, #2E7D32);
+  }
+
+  .logo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    animation: floatIn 1s ease forwards;
+  }
+
+  .logo-icon {
+    width: 90px;
+    height: 90px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    animation: pulse 2s infinite;
+  }
+
+  .logo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    color: white;
+    letter-spacing: -1px;
+  }
+
+  .logo-title span { color: var(--amber-light); }
+
+  .logo-tagline {
+    color: rgba(255,255,255,0.75);
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .loader-bar {
+    margin-top: 3rem;
+    width: 200px;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .loader-fill {
+    height: 100%;
+    background: var(--amber-light);
+    border-radius: 10px;
+    animation: load 2.5s ease forwards;
+  }
+
+  @keyframes load {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== ONBOARDING SCREENS ===== */
+  .onboard-container {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .ob-illustration {
+    width: clamp(140px, 35vw, 200px);
+    height: clamp(140px, 35vw, 200px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(4rem, 10vw, 6rem);
+    position: relative;
+  }
+
+  .ob-illustration::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 3px dashed var(--green-light);
+    opacity: 0.5;
+    animation: spin 12s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ob-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: var(--amber);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .ob-step {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green-mid);
+  }
+
+  .ob-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    line-height: 1.2;
+    color: var(--text-light);
+  }
+
+  body.dark .ob-title { color: var(--text-dark); }
+
+  .ob-title span { color: var(--amber); }
+
+  .ob-desc {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    line-height: 1.7;
+    color: var(--muted-light);
+    max-width: 380px;
+  }
+
+  body.dark .ob-desc { color: var(--muted-dark); }
+
+  /* Illustration backgrounds */
+  #screen-1 .ob-illustration { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+  #screen-2 .ob-illustration { background: linear-gradient(135deg, #FFF8E1, #FFE082); }
+  #screen-3 .ob-illustration { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+  #screen-4 .ob-illustration { background: linear-gradient(135deg, #F3E5F5, #E1BEE7); }
+
+  body.dark #screen-1 .ob-illustration { background: linear-gradient(135deg, #1B3A1F, #2E4A2E); }
+  body.dark #screen-2 .ob-illustration { background: linear-gradient(135deg, #3A2A00, #4A3800); }
+  body.dark #screen-3 .ob-illustration { background: linear-gradient(135deg, #0D2137, #1A3A50); }
+  body.dark #screen-4 .ob-illustration { background: linear-gradient(135deg, #2A1A2E, #3A2040); }
+
+  /* ===== NAVIGATION ===== */
+  .nav-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to top, var(--bg-light) 70%, transparent);
+    z-index: 100;
+  }
+
+  body.dark .nav-area {
+    background: linear-gradient(to top, var(--bg-dark) 70%, transparent);
+  }
+
+  .dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted-light);
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  body.dark .dot { background: var(--muted-dark); }
+
+  .dot.active {
+    width: 24px;
+    border-radius: 4px;
+    background: var(--green-mid);
+  }
+
+  .btn-next {
+    background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+    color: white;
+    border: none;
+    padding: 0.85rem 2rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(46,125,50,0.3);
+  }
+
+  .btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(46,125,50,0.45);
+  }
+
+  .btn-next.amber {
+    background: linear-gradient(135deg, #D97706, var(--amber));
+    box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+  }
+
+  .btn-skip {
+    background: none;
+    border: none;
+    color: var(--muted-light);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.3s;
+  }
+
+  body.dark .btn-skip { color: var(--muted-dark); }
+  .btn-skip:hover { color: var(--green-mid); }
+
+  /* ===== GET STARTED SCREEN ===== */
+  .getstarted-wrap {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .gs-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 2.8rem);
+    color: var(--green-dark);
+  }
+
+  body.dark .gs-logo { color: var(--green-light); }
+  .gs-logo span { color: var(--amber); }
+
+  .gs-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    line-height: 1.3;
+  }
+
+  .gs-sub {
+    color: var(--muted-light);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  body.dark .gs-sub { color: var(--muted-dark); }
+
+  .gs-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(46,125,50,0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(46,125,50,0.4);
+  }
+
+  .btn-secondary {
+    width: 100%;
+    background: transparent;
+    color: var(--green-dark);
+    border: 2px solid var(--green-mid);
+    padding: 1rem;
+    border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  body.dark .btn-secondary { color: var(--green-light); border-color: var(--green-light); }
+
+  .btn-secondary:hover {
+    background: var(--green-mid);
+    color: white;
+    border-color: var(--green-mid);
+  }
+
+  .gs-terms {
+    font-size: 0.75rem;
+    color: var(--muted-light);
+    line-height: 1.5;
+  }
+
+  body.dark .gs-terms { color: var(--muted-dark); }
+  .gs-terms a { color: var(--green-mid); text-decoration: none; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 480px) {
+    .nav-area { padding: 1rem 1.2rem 1.5rem; }
+    .screen { padding: 1.5rem 1.2rem; }
+  }
+
+  @media (min-width: 768px) {
+    .onboard-container { max-width: 600px; }
+    .ob-desc { font-size: 1.05rem; }
+  }
+
+  @media (min-width: 1024px) {
+    .screen { flex-direction: row; gap: 4rem; text-align: left; }
+    #screen-loading { flex-direction: column; }
+    #screen-4 { flex-direction: column; }
+    .onboard-container { text-align: left; align-items: flex-start; max-width: 460px; }
+    .ob-illustration { width: 280px; height: 280px; font-size: 6rem; flex-shrink: 0; }
+    .ob-illustration::before { inset: -12px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
+
+<div class="screens">
+
+  <!-- LOADING SCREEN -->
+  <div class="screen active" id="screen-loading">
+    <div class="logo-wrap">
+      <div class="logo-icon">🥗</div>
+      <div class="logo-title">Nutri<span>Budget</span></div>
+      <div class="logo-tagline">Eat well · Spend smart</div>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING 1: What it does -->
+  <div class="screen" id="screen-1">
+    <div class="ob-illustration">
+      🍽️
+      <div class="ob-badge">Smart</div>
+    </div>
+    <div class="onboard-container">
+      <div class="ob-step">Step 1 of 3</div>
+      <div class="ob-title">Good food shouldn't cost a <span>fortune</span></div>
+      <div class="ob-desc">NutriBudget helps you plan nutritious meals that fit your budget — whether you're feeding yourself or your whole family.</div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING 2: How it works -->
+  <div class="screen" id="screen-2">
+    <div class="ob-illustration">
+      💰
+      <div class="ob-badge">Budget</div>
+    </div>
+    <div class="onboard-container">
+      <div class="ob-step">Step 2 of 3</div>
+      <div class="ob-title">Set your budget. Choose your <span>people</span>.</div>
+      <div class="ob-desc">Enter your budget and number of individuals. NutriBudget plans your meals daily or weekly — using real local market prices you control.</div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING 3: What you get -->
+  <div class="screen" id="screen-3">
+    <div class="ob-illustration">
+      📊
+      <div class="ob-badge">Nutrition</div>
+    </div>
+    <div class="onboard-container">
+      <div class="ob-step">Step 3 of 3</div>
+      <div class="ob-title">Track nutrients. Get <span>deficiency</span> alerts.</div>
+      <div class="ob-desc">See your carbs, protein, fats and vitamins in real time. Get alerts when something's missing — and know exactly what to fix.</div>
+    </div>
+  </div>
+
+  <!-- GET STARTED -->
+  <div class="screen" id="screen-4">
+    <div class="getstarted-wrap">
+      <div class="gs-logo">Nutri<span>Budget</span></div>
+      <div class="gs-title">Ready to eat well on a budget?</div>
+      <div class="gs-sub">Create an account to get started or log in if you already have one.</div>
+      <div class="gs-buttons">
+        <button class="btn-primary">🚀 Create Account</button>
+        <button class="btn-secondary">Log In</button>
+      </div>
+      <div class="gs-terms">By continuing you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV (hidden on loading) -->
+<div class="nav-area" id="nav-area" style="display:none;">
+  <button class="btn-skip" id="btn-skip" onclick="skipToEnd()">Skip</button>
+  <div class="dots" id="dots">
+    <div class="dot active" onclick="goTo(1)"></div>
+    <div class="dot" onclick="goTo(2)"></div>
+    <div class="dot" onclick="goTo(3)"></div>
+    <div class="dot" onclick="goTo(4)"></div>
+  </div>
+  <button class="btn-next" id="btn-next" onclick="nextScreen()">Next →</button>
+</div>
+
+<script>
+  let current = 0;
+  const screens = ['screen-loading','screen-1','screen-2','screen-3','screen-4'];
+  const totalOnboard = 4;
+
+  // Auto-advance loading screen
+  setTimeout(() => {
+    goTo(1);
+    document.getElementById('nav-area').style.display = 'flex';
+  }, 3000);
+
+  function goTo(index) {
+    const prev = document.getElementById(screens[current]);
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 600);
+
+    current = index;
+    const next = document.getElementById(screens[current]);
+    next.classList.add('active');
+
+    updateNav();
+  }
+
+  function nextScreen() {
+    if (current < totalOnboard) goTo(current + 1);
+  }
+
+  function skipToEnd() { goTo(4); }
+
+  function updateNav() {
+    const dots = document.querySelectorAll('.dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i === current - 1));
+
+    const btnNext = document.getElementById('btn-next');
+    const btnSkip = document.getElementById('btn-skip');
+
+    if (current === 4) {
+      btnNext.style.display = 'none';
+      btnSkip.style.display = 'none';
+    } else {
+      btnNext.style.display = 'flex';
+      btnSkip.style.display = 'block';
+      btnNext.textContent = current === 3 ? "Get Started 🎉" : "Next →";
+      btnNext.className = current === 3 ? 'btn-next amber' : 'btn-next';
+    }
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle('dark');
+    document.querySelector('.theme-toggle').textContent =
+      document.body.classList.contains('dark') ? '☀️' : '🌙';
+  }
+</script>
+</body>
+</html>
